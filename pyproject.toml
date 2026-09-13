@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bank-widget-homework"
-version = "0.2.0"
+version = "0.3.0"
 description = "Utilities for banking operation widgets"
 authors = ["Student"]
 readme = "README.md"
@@ -9,11 +9,20 @@ packages = [{ include = "src" }]
 [tool.poetry.dependencies]
 python = "^3.12"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-cov = "^6.0.0"
+
 [tool.poetry.group.lint.dependencies]
 flake8 = "^7.1.1"
 black = "^24.10.0"
 isort = "^5.13.2"
 mypy = "^1.13.0"
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-branch --cov-report=term-missing --cov-report=html:htmlcov --cov-fail-under=80"
+testpaths = ["tests"]
+pythonpath = ["."]
 
 [tool.black]
 line-length = 119

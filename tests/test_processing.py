@@ -1,83 +1,75 @@
-"""Tests for operation-processing helpers."""
+"""Тесты функций модуля processing."""
 
-import unittest
+from typing import Any
+
+import pytest
 
 from src.processing import filter_by_state, sort_by_date
 
 
-class TestProcessing(unittest.TestCase):
-    """Check filtering and sorting of banking operations."""
-
-    def setUp(self) -> None:
-        """Prepare the operation list from the homework examples."""
-        self.operations = [
-            {
-                "id": 41428829,
-                "state": "EXECUTED",
-                "date": "2019-07-03T18:35:29.512364",
-            },
-            {
-                "id": 939719570,
-                "state": "EXECUTED",
-                "date": "2018-06-30T02:08:58.425572",
-            },
-            {
-                "id": 594226727,
-                "state": "CANCELED",
-                "date": "2018-09-12T21:27:25.241689",
-            },
-            {
-                "id": 615064591,
-                "state": "CANCELED",
-                "date": "2018-10-14T08:21:33.419441",
-            },
-        ]
-
-    def test_filter_by_state_uses_executed_by_default(self) -> None:
-        """The default filter keeps only EXECUTED operations."""
-        result = filter_by_state(self.operations)
-
-        self.assertEqual([operation["id"] for operation in result], [41428829, 939719570])
-
-    def test_filter_by_state_accepts_custom_state(self) -> None:
-        """A custom state can be passed as the second argument."""
-        result = filter_by_state(self.operations, "CANCELED")
-
-        self.assertEqual([operation["id"] for operation in result], [594226727, 615064591])
-
-    def test_filter_by_state_returns_new_list(self) -> None:
-        """Filtering must not return the original list object."""
-        result = filter_by_state(self.operations)
-
-        self.assertIsNot(result, self.operations)
-
-    def test_sort_by_date_descending_by_default(self) -> None:
-        """By default operations are sorted from newest to oldest."""
-        result = sort_by_date(self.operations)
-
-        self.assertEqual(
-            [operation["id"] for operation in result],
-            [41428829, 615064591, 594226727, 939719570],
-        )
-
-    def test_sort_by_date_can_sort_ascending(self) -> None:
-        """Passing False sorts operations from oldest to newest."""
-        result = sort_by_date(self.operations, False)
-
-        self.assertEqual(
-            [operation["id"] for operation in result],
-            [939719570, 594226727, 615064591, 41428829],
-        )
-
-    def test_sort_by_date_does_not_modify_source_list(self) -> None:
-        """Sorting must leave the source list order unchanged."""
-        original_ids = [operation["id"] for operation in self.operations]
-
-        result = sort_by_date(self.operations)
-
-        self.assertIsNot(result, self.operations)
-        self.assertEqual([operation["id"] for operation in self.operations], original_ids)
+@pytest.mark.parametrize(
+    ("state", "expected_ids"),
+    [
+        ("EXECUTED", [41428829, 939719570]),
+        ("CANCELED", [594226727, 615064591]),
+        ("PENDING", [100000001]),
+        ("UNKNOWN", []),
+    ],
+)
+def test_filter_by_state(
+    operations: list[dict[str, Any]], state: str, expected_ids: list[int]
+) -> None:
+    """Проверить фильтрацию по разным значениям state."""
+    result = filter_by_state(operations, state)
+    assert [operation["id"] for operation in result] == expected_ids
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_filter_by_state_default(operations: list[dict[str, Any]]) -> None:
+    """Проверить значение EXECUTED по умолчанию."""
+    result = filter_by_state(operations)
+    assert [operation["id"] for operation in result] == [41428829, 939719570]
+    assert result is not operations
+
+
+@pytest.mark.parametrize(
+    ("descending", "expected_ids"),
+    [
+        (True, [100000001, 41428829, 615064591, 594226727, 939719570]),
+        (False, [939719570, 594226727, 615064591, 41428829, 100000001]),
+    ],
+)
+def test_sort_by_date(
+    operations: list[dict[str, Any]], descending: bool, expected_ids: list[int]
+) -> None:
+    """Проверить сортировку по убыванию и возрастанию даты."""
+    original_ids = [operation["id"] for operation in operations]
+    result = sort_by_date(operations, descending)
+
+    assert [operation["id"] for operation in result] == expected_ids
+    assert [operation["id"] for operation in operations] == original_ids
+    assert result is not operations
+
+
+def test_sort_by_date_same_dates(same_date_operations: list[dict[str, Any]]) -> None:
+    """Проверить стабильный порядок операций с одинаковыми датами."""
+    result = sort_by_date(same_date_operations)
+    assert [operation["id"] for operation in result] == [1, 2]
+
+
+def test_sort_by_date_nonstandard_date() -> None:
+    """Проверить сортировку нестандартных строковых значений date."""
+    operations = [
+        {"id": 1, "state": "EXECUTED", "date": "2024-1-2"},
+        {"id": 2, "state": "EXECUTED", "date": "2024-01-10"},
+    ]
+
+    result = sort_by_date(operations, descending=False)
+    assert [operation["id"] for operation in result] == [2, 1]
+
+
+def test_sort_by_date_missing_date() -> None:
+    """Проверить исключение, если в операции отсутствует ключ date."""
+    operations = [{"id": 1, "state": "EXECUTED"}]
+
+    with pytest.raises(KeyError):
+        sort_by_date(operations)

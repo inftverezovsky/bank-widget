@@ -1,38 +1,58 @@
-"""Тесты функций маскировки банковских реквизитов."""
+"""Тесты функций модуля masks."""
 
-import unittest
+import pytest
 
 from src.masks import get_mask_account, get_mask_card_number
 
 
-class TestMasks(unittest.TestCase):
-    """Проверки функций модуля masks."""
-
-    def test_get_mask_card_number(self) -> None:
-        """Номер карты из 16 символов маскируется по заданному формату."""
-        result = get_mask_card_number("7000792289606361")
-        self.assertEqual(result, "7000 79** **** 6361")
-
-    def test_get_mask_card_number_invalid_length(self) -> None:
-        """Номер карты длиной не 16 символов вызывает ошибку."""
-        with self.assertRaises(ValueError):
-            get_mask_card_number("700079228960636")
-
-    def test_get_mask_account(self) -> None:
-        """У номера счета остаются видимыми только последние 4 символа."""
-        result = get_mask_account("73654108430135874305")
-        self.assertEqual(result, "**4305")
-
-    def test_get_mask_account_minimum_length(self) -> None:
-        """Строка счета длиной 4 символа также обрабатывается корректно."""
-        result = get_mask_account("4305")
-        self.assertEqual(result, "**4305")
-
-    def test_get_mask_account_too_short(self) -> None:
-        """Номер счета короче 4 символов вызывает ошибку."""
-        with self.assertRaises(ValueError):
-            get_mask_account("305")
+def test_get_mask_card_number(card_number: str) -> None:
+    """Проверить обычное маскирование номера карты."""
+    assert get_mask_card_number(card_number) == "7000 79** **** 6361"
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.mark.parametrize(
+    ("card_number", "expected"),
+    [
+        ("1596837868705199", "1596 83** **** 5199"),
+        ("0000000000000000", "0000 00** **** 0000"),
+        ("9999999999999999", "9999 99** **** 9999"),
+    ],
+)
+def test_get_mask_card_number_different_values(card_number: str, expected: str) -> None:
+    """Проверить несколько корректных номеров карт."""
+    assert get_mask_card_number(card_number) == expected
+
+
+@pytest.mark.parametrize(
+    "card_number",
+    ["", "1234", "700079228960636", "70007922896063611"],
+)
+def test_get_mask_card_number_invalid_length(card_number: str) -> None:
+    """Проверить ошибку при пустом или некорректном номере карты."""
+    with pytest.raises(ValueError):
+        get_mask_card_number(card_number)
+
+
+def test_get_mask_account(account_number: str) -> None:
+    """Проверить обычное маскирование номера счета."""
+    assert get_mask_account(account_number) == "**4305"
+
+
+@pytest.mark.parametrize(
+    ("account_number", "expected"),
+    [
+        ("4305", "**4305"),
+        ("64686473678894779589", "**9589"),
+        ("00000000", "**0000"),
+    ],
+)
+def test_get_mask_account_different_lengths(account_number: str, expected: str) -> None:
+    """Проверить счета различной допустимой длины."""
+    assert get_mask_account(account_number) == expected
+
+
+@pytest.mark.parametrize("account_number", ["", "1", "12", "123"])
+def test_get_mask_account_too_short(account_number: str) -> None:
+    """Проверить ошибку для слишком короткого счета."""
+    with pytest.raises(ValueError):
+        get_mask_account(account_number)
