@@ -45,19 +45,19 @@ print(sort_by_date(operations, False))
 python -m unittest discover -s tests -v
 ```
 
-Flake8 и mypy:
+Проверка Flake8 и mypy:
 
 ```bash
 poetry run flake8 src tests
 poetry run mypy src tests
 ```
 
-Результат последней проверки:
+После последних исправлений получены следующие результаты:
 
-- flake8 — 0 ошибок;
-- mypy — `Success: no issues found in 8 source files`.
+- `flake8 src tests` — 0 ошибок;
+- `mypy src tests` — `Success: no issues found in 8 source files`.
 
-Проверки также запускаются автоматически через GitHub Actions.
+Обе проверки также выполняются автоматически через GitHub Actions.
 
 ## Именование
 
