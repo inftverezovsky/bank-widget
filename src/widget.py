@@ -23,20 +23,20 @@ def mask_account_card(account_card_info: str) -> str:
     if not isinstance(account_card_info, str) or not account_card_info.strip():
         raise ValueError("Необходимо передать название карты или счета и номер")
 
-    parts = account_card_info.strip().rsplit(maxsplit=1)
-    if len(parts) != 2:
+    account_card_parts = account_card_info.strip().rsplit(maxsplit=1)
+    if len(account_card_parts) != 2:
         raise ValueError("Строка должна содержать название карты или счета и номер")
 
-    name, number = parts
-    if not name.strip() or not number.isdigit():
+    account_card_name, account_card_number = account_card_parts
+    if not account_card_name.strip() or not account_card_number.isdigit():
         raise ValueError("Номер карты или счета должен состоять только из цифр")
 
-    if name.casefold() == "счет":
-        masked_number = get_mask_account(number)
+    if account_card_name.casefold() == "счет":
+        masked_number = get_mask_account(account_card_number)
     else:
-        masked_number = get_mask_card_number(number)
+        masked_number = get_mask_card_number(account_card_number)
 
-    return f"{name} {masked_number}"
+    return f"{account_card_name} {masked_number}"
 
 
 def get_date(date_string: str) -> str:
