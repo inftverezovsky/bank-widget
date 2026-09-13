@@ -1,17 +1,36 @@
-# Bank Widget Homework
+# Bank Widget
 
-Домашнее задание по виджету банковских операций клиента.
+Учебный проект виджета банковских операций клиента. Проект содержит функции для маскировки карт и счетов, форматирования даты, фильтрации операций по статусу и сортировки операций по дате.
 
-## Реализовано
+## Возможности
 
-- `src/masks.py` — маскировка номера банковской карты и счета.
-- `src/widget.py` — обработка строки с названием карты/счета и номером через `mask_account_card()`.
-- `src/widget.py` — преобразование ISO-даты в формат `ДД.ММ.ГГГГ` через `get_date()`.
-- `.gitignore` — исключения для Python, IDE, виртуальных окружений, тестовых и временных файлов.
-- Git-репозиторий с историей разработки из трех и более логичных коммитов.
-- Автоматические тесты в `tests/`.
+- `get_mask_card_number()` — маскирует номер банковской карты.
+- `get_mask_account()` — маскирует номер банковского счета.
+- `mask_account_card()` — принимает одной строкой название карты/счета и номер, затем возвращает замаскированное значение.
+- `get_date()` — преобразует дату из ISO-формата в `ДД.ММ.ГГГГ`.
+- `filter_by_state()` — возвращает новый список операций с выбранным статусом. По умолчанию используется `EXECUTED`.
+- `sort_by_date()` — возвращает новый список операций, отсортированный по дате. По умолчанию сортировка выполняется по убыванию.
 
-## Примеры
+## Установка
+
+### Вариант с Poetry
+
+```bash
+git clone <URL-вашего-репозитория>
+cd bank-widget
+poetry install --with lint
+```
+
+### Без Poetry
+
+Для запуска самих функций достаточно Python 3.12 или совместимой версии Python 3.
+
+```bash
+git clone <URL-вашего-репозитория>
+cd bank-widget
+```
+
+## Использование маскировки и даты
 
 ```python
 from src.widget import get_date, mask_account_card
@@ -26,19 +45,63 @@ print(get_date("2024-03-11T02:26:18.671407"))
 # 11.03.2024
 ```
 
-## Проверка
+## Фильтрация операций
+
+```python
+from src.processing import filter_by_state
+
+operations = [
+    {"id": 1, "state": "EXECUTED", "date": "2019-07-03T18:35:29.512364"},
+    {"id": 2, "state": "CANCELED", "date": "2018-09-12T21:27:25.241689"},
+]
+
+print(filter_by_state(operations))
+# [{'id': 1, 'state': 'EXECUTED', 'date': '2019-07-03T18:35:29.512364'}]
+
+print(filter_by_state(operations, "CANCELED"))
+# [{'id': 2, 'state': 'CANCELED', 'date': '2018-09-12T21:27:25.241689'}]
+```
+
+## Сортировка операций
+
+```python
+from src.processing import sort_by_date
+
+operations = [
+    {"id": 1, "state": "EXECUTED", "date": "2018-06-30T02:08:58.425572"},
+    {"id": 2, "state": "EXECUTED", "date": "2019-07-03T18:35:29.512364"},
+]
+
+print(sort_by_date(operations))
+# Сначала операция с датой 2019-07-03, затем 2018-06-30.
+
+print(sort_by_date(operations, False))
+# Сначала операция с датой 2018-06-30, затем 2019-07-03.
+```
+
+## Проверка проекта
+
+Запуск тестов:
 
 ```bash
 python -m unittest discover -s tests -v
-git status
 ```
 
-Дополнительно, если зависимости установлены через Poetry:
+Если зависимости установлены через Poetry:
 
 ```bash
-poetry install --with lint
 poetry run flake8 src tests
 poetry run black --check src tests
 poetry run isort --check-only src tests
 poetry run mypy src tests
 ```
+
+## GitFlow
+
+В проекте используются ветки:
+
+- `main` — стабильная версия;
+- `develop` — ветка разработки;
+- `feature/homework_processing` — ветка текущей домашней работы.
+
+Домашняя работа должна отправляться pull request из `feature/homework_processing` в `develop`.
