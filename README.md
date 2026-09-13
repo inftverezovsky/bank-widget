@@ -87,14 +87,32 @@ print(sort_by_date(operations, False))
 python -m unittest discover -s tests -v
 ```
 
-Если зависимости установлены через Poetry:
+Проверка стиля и типов:
 
 ```bash
 poetry run flake8 src tests
-poetry run black --check src tests
-poetry run isort --check-only src tests
 poetry run mypy src tests
 ```
+
+Также можно выполнить дополнительные проверки форматирования:
+
+```bash
+poetry run black --check src tests
+poetry run isort --check-only src tests
+```
+
+### Результаты проверки качества кода
+
+Проверка выполнена автоматически в GitHub Actions на Python 3.12:
+
+- `flake8 src tests` — **0 ошибок**;
+- `mypy src tests` — **Success: no issues found in 8 source files**.
+
+Workflow `.github/workflows/code-quality.yml` автоматически запускает `flake8` и `mypy` для ветки домашней работы и pull request в `develop`.
+
+## Именование
+
+Переменные и параметры функций оформлены в стиле PEP 8: используются понятные имена в нижнем регистре с подчеркиваниями (`snake_case`), без однобуквенных пользовательских имен переменных.
 
 ## GitFlow
 
@@ -104,4 +122,4 @@ poetry run mypy src tests
 - `develop` — ветка разработки;
 - `feature/homework_processing` — ветка текущей домашней работы.
 
-Домашняя работа должна отправляться pull request из `feature/homework_processing` в `develop`.
+Домашняя работа отправляется pull request из `feature/homework_processing` в `develop`.
