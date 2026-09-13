@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "bank-widget-homework"
-version = "0.1.0"
-description = "Backend utilities for masking bank card and account numbers"
+version = "0.2.0"
+description = "Utilities for banking operation widgets"
 authors = ["Student"]
 readme = "README.md"
 packages = [{ include = "src" }]

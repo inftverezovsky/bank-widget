@@ -1,44 +1,64 @@
-# Bank Widget Homework
+# Bank Widget
 
-Домашнее задание по виджету банковских операций клиента.
+Учебный проект для работы с банковскими операциями.
 
-## Реализовано
+## Возможности
 
-- `src/masks.py` — маскировка номера банковской карты и счета.
-- `src/widget.py` — обработка строки с названием карты/счета и номером через `mask_account_card()`.
-- `src/widget.py` — преобразование ISO-даты в формат `ДД.ММ.ГГГГ` через `get_date()`.
-- `.gitignore` — исключения для Python, IDE, виртуальных окружений, тестовых и временных файлов.
-- Git-репозиторий с историей разработки из трех и более логичных коммитов.
-- Автоматические тесты в `tests/`.
+В проекте реализованы функции для:
 
-## Примеры
+- маскировки номера карты и счета;
+- форматирования даты;
+- фильтрации операций по статусу;
+- сортировки операций по дате.
 
-```python
-from src.widget import get_date, mask_account_card
+## Установка
 
-print(mask_account_card("Visa Platinum 7000792289606361"))
-# Visa Platinum 7000 79** **** 6361
-
-print(mask_account_card("Счет 73654108430135874305"))
-# Счет **4305
-
-print(get_date("2024-03-11T02:26:18.671407"))
-# 11.03.2024
+```bash
+git clone https://github.com/inftverezovsky/bank-widget.git
+cd bank-widget
+poetry install --with lint
 ```
 
-## Проверка
+## Примеры использования
+
+```python
+from src.processing import filter_by_state, sort_by_date
+
+operations = [
+    {"id": 1, "state": "EXECUTED", "date": "2019-07-03T18:35:29.512364"},
+    {"id": 2, "state": "CANCELED", "date": "2018-09-12T21:27:25.241689"},
+]
+
+print(filter_by_state(operations))
+print(filter_by_state(operations, "CANCELED"))
+print(sort_by_date(operations))
+print(sort_by_date(operations, False))
+```
+
+Также в проекте есть функции `mask_account_card()` и `get_date()` из прошлой домашней работы.
+
+## Проверка кода
+
+Тесты:
 
 ```bash
 python -m unittest discover -s tests -v
-git status
 ```
 
-Дополнительно, если зависимости установлены через Poetry:
+Проверка Flake8 и mypy:
 
 ```bash
-poetry install --with lint
 poetry run flake8 src tests
-poetry run black --check src tests
-poetry run isort --check-only src tests
 poetry run mypy src tests
 ```
+
+После последних исправлений получены следующие результаты:
+
+- `flake8 src tests` — 0 ошибок;
+- `mypy src tests` — `Success: no issues found in 8 source files`.
+
+Обе проверки также выполняются автоматически через GitHub Actions.
+
+## Именование
+
+Имена переменных записаны в `snake_case`. Однобуквенные имена переменных не используются.
