@@ -16,49 +16,50 @@
 ```bash
 git clone https://github.com/inftverezovsky/bank-widget.git
 cd bank-widget
-poetry install --with lint
+poetry install
 ```
 
-## Примеры использования
+## Тестирование
 
-```python
-from src.processing import filter_by_state, sort_by_date
+Для тестирования используется `pytest`.
 
-operations = [
-    {"id": 1, "state": "EXECUTED", "date": "2019-07-03T18:35:29.512364"},
-    {"id": 2, "state": "CANCELED", "date": "2018-09-12T21:27:25.241689"},
-]
-
-print(filter_by_state(operations))
-print(filter_by_state(operations, "CANCELED"))
-print(sort_by_date(operations))
-print(sort_by_date(operations, False))
-```
-
-Также в проекте есть функции `mask_account_card()` и `get_date()` из прошлой домашней работы.
-
-## Проверка кода
-
-Тесты:
+Запуск всех тестов:
 
 ```bash
-python -m unittest discover -s tests -v
+pytest
 ```
 
-Проверка Flake8 и mypy:
+Тесты разделены по модулям:
+
+- `tests/test_masks.py` — функции из `masks.py`;
+- `tests/test_widget.py` — функции из `widget.py`;
+- `tests/test_processing.py` — функции из `processing.py`;
+- `tests/conftest.py` — общие фикстуры с тестовыми данными.
+
+В тестах используются фикстуры `pytest` и параметризация `pytest.mark.parametrize` для проверки разных номеров карт и счетов, дат, статусов операций и ошибочных входных данных.
+
+Покрытие запускается автоматически вместе с `pytest` через `pytest-cov`. Минимально допустимое покрытие в настройках проекта — 80%.
+
+Результат контрольного запуска:
+
+```text
+47 passed
+TOTAL: 36 statements, 0 missed, 14 branches, 0 partial
+Coverage: 100%
+```
+
+HTML-отчет покрытия находится в папке `htmlcov/`. Основной файл отчета — `htmlcov/index.html`.
+
+## Проверка качества кода
 
 ```bash
-poetry run flake8 src tests
-poetry run mypy src tests
+flake8 src tests
+mypy src tests
+isort --check-only src tests
 ```
 
-После последних исправлений получены следующие результаты:
-
-- `flake8 src tests` — 0 ошибок;
-- `mypy src tests` — `Success: no issues found in 8 source files`.
-
-Обе проверки также выполняются автоматически через GitHub Actions.
+Эти же проверки вместе с `pytest` выполняются автоматически в GitHub Actions для feature-ветки и pull request в `develop`.
 
 ## Именование
 
-Имена переменных записаны в `snake_case`. Однобуквенные имена переменных не используются.
+Имена переменных записаны в `snake_case`. Однобуквенные пользовательские имена переменных не используются.

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Coverage report — Bank Widget</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; color: #222; }
+        h1 { margin-bottom: 8px; }
+        .summary { font-size: 1.2rem; margin: 16px 0 24px; }
+        table { border-collapse: collapse; min-width: 720px; }
+        th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: right; }
+        th:first-child, td:first-child { text-align: left; }
+        th { background: #f3f3f3; }
+        .total { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Coverage report</h1>
+    <p>Команда: <code>pytest</code> с <code>pytest-cov</code> и branch coverage.</p>
+    <p class="summary"><strong>Итоговое покрытие: 100%</strong> — 47 тестов успешно.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Модуль</th>
+                <th>Statements</th>
+                <th>Miss</th>
+                <th>Branches</th>
+                <th>Partial</th>
+                <th>Coverage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>src/__init__.py</td><td>0</td><td>0</td><td>0</td><td>0</td><td>100%</td></tr>
+            <tr><td>src/masks.py</td><td>8</td><td>0</td><td>4</td><td>0</td><td>100%</td></tr>
+            <tr><td>src/processing.py</td><td>5</td><td>0</td><td>0</td><td>0</td><td>100%</td></tr>
+            <tr><td>src/widget.py</td><td>23</td><td>0</td><td>10</td><td>0</td><td>100%</td></tr>
+            <tr class="total"><td>TOTAL</td><td>36</td><td>0</td><td>14</td><td>0</td><td>100%</td></tr>
+        </tbody>
+    </table>
+    <p>Отчёт получен после локального запуска тестов на подготовленной версии feature-ветки.</p>
+</body>
+</html>
