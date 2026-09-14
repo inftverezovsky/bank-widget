@@ -3,7 +3,6 @@
 from collections.abc import Iterator
 from typing import Any
 
-
 MIN_CARD_NUMBER = 1
 MAX_CARD_NUMBER = 9_999_999_999_999_999
 
