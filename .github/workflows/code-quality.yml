@@ -34,4 +34,4 @@ jobs:
         run: mypy src tests
 
       - name: Check imports with isort
-        run: isort --check-only src tests
+        run: isort --check-only --diff src tests
