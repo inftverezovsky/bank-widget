@@ -93,6 +93,14 @@ pytest
 
 Покрытие запускается вместе с `pytest` через `pytest-cov`. Минимально допустимое покрытие проекта — 80%.
 
+Результат контрольного запуска:
+
+```text
+65 passed
+TOTAL: 61 statements, 0 missed, 30 branches, 0 partial
+Coverage: 100%
+```
+
 HTML-отчет покрытия находится в папке `htmlcov/`. Основной файл отчета — `htmlcov/index.html`.
 
 ## Проверка качества кода
