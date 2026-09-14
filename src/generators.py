@@ -69,5 +69,5 @@ def card_number_generator(start: int, stop: int) -> Iterator[str]:
     for card_number in range(start, stop + 1):
         card_number_text = f"{card_number:016d}"
         yield " ".join(
-            card_number_text[index : index + 4] for index in range(0, 16, 4)
+            card_number_text[index:index + 4] for index in range(0, 16, 4)
         )
