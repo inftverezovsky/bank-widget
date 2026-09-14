@@ -3,7 +3,7 @@ name: Tests and code quality
 on:
   push:
     branches:
-      - feature/homework_tests
+      - "feature/**"
   pull_request:
     branches:
       - develop
