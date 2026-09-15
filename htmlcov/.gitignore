@@ -1,0 +1,2 @@
+# Keep the HTML report; exclude only the incremental coverage cache.
+status.json
