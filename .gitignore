@@ -41,3 +41,4 @@ Thumbs.db
 # Project-local temporary files
 *.log
 *.tmp
+mylog.txt
