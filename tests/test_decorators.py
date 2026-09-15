@@ -228,3 +228,101 @@ def test_log_keeps_functions_independent(tmp_path: Path, capsys: pytest.CaptureF
     assert "second ok. Result: 2" in second_output
     assert "first" not in second_output
     assert capsys.readouterr().out == ""
+
+
+def test_log_file_error_is_not_silenced(tmp_path: Path) -> None:
+    """Отсутствующая родительская папка должна приводить к OSError."""
+    calls: list[int] = []
+
+    @log(str(tmp_path / "missing" / "mylog.txt"))
+    def record_call(value: int) -> int:
+        """Записать факт вызова функции."""
+        calls.append(value)
+        return value
+
+    with pytest.raises(OSError):
+        record_call(1)
+    assert calls == []
+
+
+def test_log_error_keeps_original_inputs(capsys: pytest.CaptureFixture[str]) -> None:
+    """В записи об ошибке остаются аргументы до изменения функцией."""
+
+    @log()
+    def change_then_fail(values: list[int]) -> None:
+        """Изменить входной список и завершиться ошибкой."""
+        values.append(2)
+        raise ValueError("Не удалось завершить операцию")
+
+    values = [1]
+    with pytest.raises(ValueError):
+        change_then_fail(values)
+
+    output = capsys.readouterr().out
+    assert values == [1, 2]
+    assert output.count("Inputs: ([1],), {}") == 2
+    assert "change_then_fail end" in output
+
+
+def test_log_can_continue_after_exception(tmp_path: Path) -> None:
+    """После ошибочного вызова та же обертка должна работать дальше."""
+    log_path = tmp_path / "history.log"
+
+    @log(str(log_path))
+    def divide_numbers(numerator: int, denominator: int) -> float:
+        """Разделить два числа."""
+        return numerator / denominator
+
+    with pytest.raises(ZeroDivisionError):
+        divide_numbers(1, 0)
+    assert divide_numbers(4, 2) == 2.0
+
+    output = log_path.read_text(encoding="utf-8")
+    assert output.count("divide_numbers start") == 2
+    assert output.count("divide_numbers error") == 1
+    assert output.count("divide_numbers ok") == 1
+    assert output.count("divide_numbers end") == 2
+
+
+def test_log_relative_filename(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Относительный путь должен разрешаться от рабочей папки."""
+    monkeypatch.chdir(tmp_path)
+
+    @log(filename="mylog.txt")
+    def complete() -> int:
+        """Вернуть результат успешного вызова."""
+        return 3
+
+    assert complete() == 3
+    assert "complete ok. Result: 3" in (tmp_path / "mylog.txt").read_text(encoding="utf-8")
+
+
+def test_log_start_precedes_function(capsys: pytest.CaptureFixture[str]) -> None:
+    """Начало вызова записывается до выполнения тела, итог — после."""
+
+    @log()
+    def report_progress() -> None:
+        """Вывести отметку о выполнении тела функции."""
+        print("function body")
+
+    report_progress()
+    lines = capsys.readouterr().out.splitlines()
+    assert len(lines) == 4
+    assert lines[0].startswith("report_progress start")
+    assert lines[1] == "function body"
+    assert lines[2] == "report_progress ok. Result: None"
+    assert lines[3].startswith("report_progress end")
+
+
+def test_log_decoration_has_no_output(capsys: pytest.CaptureFixture[str]) -> None:
+    """Декорирование не запускает функцию и ничего не выводит."""
+    calls: list[str] = []
+
+    @log()
+    def record_call() -> None:
+        """Сохранить отметку о вызове."""
+        calls.append("called")
+
+    assert callable(record_call)
+    assert calls == []
+    assert capsys.readouterr().out == ""
