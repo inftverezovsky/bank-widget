@@ -2,11 +2,13 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Coverage report — Bank Widget</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; color: #222; }
         h1 { margin-bottom: 8px; }
         .summary { font-size: 1.2rem; margin: 16px 0 24px; }
+        .table-wrap { overflow-x: auto; }
         table { border-collapse: collapse; min-width: 720px; }
         th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: right; }
         th:first-child, td:first-child { text-align: left; }
@@ -16,27 +18,33 @@
 </head>
 <body>
     <h1>Coverage report</h1>
+    <p>Bank Widget: декоратор log и существующие банковские функции.</p>
     <p>Команда: <code>pytest</code> с <code>pytest-cov</code> и branch coverage.</p>
-    <p class="summary"><strong>Итоговое покрытие: 100%</strong> — 47 тестов успешно.</p>
+    <p class="summary"><strong>Итоговое покрытие: 100%</strong> — 68 тестов успешно.</p>
+    <div class="table-wrap">
     <table>
         <thead>
             <tr>
-                <th>Модуль</th>
-                <th>Statements</th>
-                <th>Miss</th>
-                <th>Branches</th>
-                <th>Partial</th>
-                <th>Coverage</th>
+                <th>Модуль</th><th>Statements</th><th>Miss</th>
+                <th>Branches</th><th>Partial</th><th>Coverage</th>
             </tr>
         </thead>
         <tbody>
             <tr><td>src/__init__.py</td><td>0</td><td>0</td><td>0</td><td>0</td><td>100%</td></tr>
+            <tr><td>src/decorators.py</td><td>27</td><td>0</td><td>2</td><td>0</td><td>100%</td></tr>
             <tr><td>src/masks.py</td><td>8</td><td>0</td><td>4</td><td>0</td><td>100%</td></tr>
             <tr><td>src/processing.py</td><td>5</td><td>0</td><td>0</td><td>0</td><td>100%</td></tr>
             <tr><td>src/widget.py</td><td>23</td><td>0</td><td>10</td><td>0</td><td>100%</td></tr>
-            <tr class="total"><td>TOTAL</td><td>36</td><td>0</td><td>14</td><td>0</td><td>100%</td></tr>
+            <tr class="total"><td>TOTAL</td><td>63</td><td>0</td><td>16</td><td>0</td><td>100%</td></tr>
         </tbody>
     </table>
-    <p>Отчёт получен после локального запуска тестов на подготовленной версии feature-ветки.</p>
+    </div>
+    <p>Показатели взяты из JSON-отчета coverage.py 7.13.3 после фактического
+    запуска 68 тестов на Python 3.13.5. Минимальный порог: 80%.</p>
+    <p>В модуле <code>tests/test_decorators.py</code> выполнена 21 проверка:
+    консоль и файл, результаты и исключения, аргументы, временные метки,
+    дозапись, UTF-8, метаданные и независимость функций.</p>
+    <p>Это сохраненная сводка контрольного запуска. Команда <code>pytest</code>
+    пересоздает подробный HTML-отчет с построчным покрытием в этой же папке.</p>
 </body>
 </html>
