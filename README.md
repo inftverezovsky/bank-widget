@@ -21,7 +21,7 @@
 ```bash
 git clone https://github.com/inftverezovsky/bank-widget.git
 cd bank-widget
-git checkout feature/homework_logging
+git checkout feature/homework_csv_pandas
 poetry install --with dev,lint
 ```
 
@@ -129,6 +129,21 @@ amount = get_transaction_amount({
 
 Тесты `tests/test_masks_logging.py` проверяют реальные файлы журналов в отдельных процессах, формат, успехи и ошибки, отсутствие реквизитов, перезапись и повторную загрузку модуля. Контракты функций маскирования из предыдущих заданий сохранены.
 
+## 13.1 — CSV и XLSX
+
+Модуль `src.file_readers` предоставляет `read_csv_transactions(path)` и `read_excel_transactions(path)`. Обе функции принимают строку или `Path` и возвращают список словарей с исходными именами столбцов.
+
+CSV читается стандартной библиотекой `csv`: UTF-8 с возможным BOM, разделитель `;`. XLSX читается через `pandas` и `openpyxl`. Поля `from` и `to` сохраняются строками, пропуски XLSX заменяются пустыми строками без NaN. Суммы XLSX остаются числами; CSV возвращает строковые значения.
+
+Корректные пустые таблицы возвращают `[]`. Отсутствующие файлы и ошибки доступа не скрываются; поврежденный формат вызывает `ValueError`. В `data/transactions.csv` и `data/transactions_excel.xlsx` находятся исходные учебные файлы. Тесты используют Mock/patch и сверяют все 1000 записей двух реальных файлов.
+
+```python
+from src.file_readers import read_csv_transactions, read_excel_transactions
+
+csv_operations = read_csv_transactions("data/transactions.csv")
+excel_operations = read_excel_transactions("data/transactions_excel.xlsx")
+```
+
 ## Тестирование
 
 Для тестирования используется `pytest`.
@@ -188,5 +203,5 @@ GitHub Actions устанавливает проект и инструменты
 в репозиторий. HTML-отчет хранится по условию задания; его служебный
 `status.json` исключен через `htmlcov/.gitignore`.
 
-Ветка этой домашней работы — `feature/homework_logging`, целевая ветка PR —
+Ветка этой домашней работы — `feature/homework_csv_pandas`, целевая ветка PR —
 `develop`. Предыдущие pull request не изменяются; принятый код генераторов сохранен в новой ветке.
