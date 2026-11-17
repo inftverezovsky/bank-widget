@@ -21,7 +21,7 @@
 ```bash
 git clone https://github.com/inftverezovsky/bank-widget.git
 cd bank-widget
-git checkout feature/homework_csv_pandas
+git checkout feature/homework_regex_collections
 poetry install --with dev,lint
 ```
 
@@ -144,6 +144,20 @@ csv_operations = read_csv_transactions("data/transactions.csv")
 excel_operations = read_excel_transactions("data/transactions_excel.xlsx")
 ```
 
+## 13.2 — Поиск, категории и консольная программа
+
+`src.search.process_bank_search(data, search)` ищет подстроку в описании без учета регистра через `re`; специальные символы экранируются. `process_bank_operations(data, categories)` использует `Counter` и возвращает количество точных совпадений описания с каждой категорией, включая нулевые значения. Исходные записи не изменяются.
+
+Запуск программы:
+
+```bash
+poetry run python -m src.main
+```
+
+Выберите JSON, CSV или XLSX, затем статус EXECUTED/CANCELED/PENDING. Регистр статуса не имеет значения. Неверный ввод запрашивается повторно. Далее можно включить сортировку по дате с выбором направления, оставить только RUB и отфильтровать описание по слову.
+
+Результат содержит количество операций, дату, описание, замаскированные реквизиты и сумму в исходной валюте. Для открытия вклада отправитель не требуется. Для пустого результата выводится соответствующее сообщение. Консольный просмотр не обращается к API конвертации и не требует ключа. Проверки `tests/test_main.py` охватывают все три источника, фильтры, ошибки ввода, сортировку, пустые и поврежденные данные.
+
 ## Тестирование
 
 Для тестирования используется `pytest`.
@@ -203,5 +217,5 @@ GitHub Actions устанавливает проект и инструменты
 в репозиторий. HTML-отчет хранится по условию задания; его служебный
 `status.json` исключен через `htmlcov/.gitignore`.
 
-Ветка этой домашней работы — `feature/homework_csv_pandas`, целевая ветка PR —
+Ветка этой домашней работы — `feature/homework_regex_collections`, целевая ветка PR —
 `develop`. Предыдущие pull request не изменяются; принятый код генераторов сохранен в новой ветке.
