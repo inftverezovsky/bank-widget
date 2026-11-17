@@ -48,7 +48,9 @@ class TestMasksLogging(unittest.TestCase):
         self.project = Path(temporary_directory.name) / "project"
         source = self.project / "src"
         source.mkdir(parents=True)
-        shutil.copyfile(Path(__file__).resolve().parents[1] / "src" / "masks.py", source / "masks.py")
+        package = Path(__file__).resolve().parents[1] / "src"
+        shutil.copyfile(package / "__init__.py", source / "__init__.py")
+        shutil.copyfile(package / "masks.py", source / "masks.py")
 
     def test_card_success_is_logged_without_payment_details(self) -> None:
         """Записать успех и DEBUG без исходного номера или его маски."""
