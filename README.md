@@ -10,6 +10,8 @@
 - форматирования даты;
 - фильтрации операций по статусу;
 - сортировки операций по дате;
+- последовательной выдачи транзакций и генерации номеров карт;
+- чтения операций из JSON и конвертации USD/EUR в рубли;
 - логирования вызовов функций, результатов и ошибок в консоль или файл.
 
 ## Установка
@@ -19,7 +21,7 @@
 ```bash
 git clone https://github.com/inftverezovsky/bank-widget.git
 cd bank-widget
-git checkout feature/homework_decorators
+git checkout feature/homework_json_requests
 poetry install --with dev,lint
 ```
 
@@ -97,6 +99,28 @@ divide error: ZeroDivisionError. Inputs: (1,), {'divisor': 0}. Error: 'division 
 токены или полные банковские реквизиты. К существующим функциям маскировки
 декоратор автоматически не применяется. Ошибки записи файла также не подавляются.
 
+## 12.1 — JSON и конвертация валют
+
+`src.utils.load_transactions(path)` принимает строку или `Path` и возвращает список словарей. Отсутствующий, пустой, поврежденный или нечитаемый JSON, неверная кодировка, корневое значение не-список и список с элементами не-словарями дают `[]`. Корректные словари сохраняются без изменения. Исходный учебный файл — `data/operations.json`.
+
+```python
+from src.external_api import get_transaction_amount
+from src.utils import load_transactions
+
+operations = load_transactions("data/operations.json")
+amount = get_transaction_amount({
+    "operationAmount": {"amount": "123.45", "currency": {"code": "RUB"}}
+})
+```
+
+`get_transaction_amount(transaction)` возвращает `float`: RUB — без сети, USD/EUR — через Exchange Rates Data API. Запрос использует параметры `from`, `to=RUB`, `amount`, заголовок `apikey` и таймаут 10 секунд. Неверная транзакция, неподдерживаемая валюта или отсутствующий ключ вызывают `ValueError`; сетевые ошибки и некорректный ответ API — `RuntimeError`, а не выдуманную нулевую сумму.
+
+Для USD/EUR скопируйте `.env_template` в `.env` и задайте собственный `EXCHANGE_RATE_API_KEY`. `.env` исключен из Git; уже заданная переменная окружения имеет приоритет. Действующий ключ не включен в проект, поэтому сетевые сценарии проверены офлайн через `Mock` и `patch`, а не реальным запросом.
+
+Логер `src.utils` пишет в `logs/utils.log` с уровнем DEBUG: успешные чтения — DEBUG, ошибки — ERROR. Формат содержит время, имя модуля, уровень и сообщение. Новый процесс перезаписывает журнал, повторный импорт не добавляет обработчики. Данные операций и секреты не записываются в журнал.
+
+`src.generators` сохранен из предыдущей учебной ветки вместе с тестами: `filter_by_currency`, `transaction_descriptions`, `card_number_generator`. Файлы в `data/` предоставлены курсом и не являются выгрузкой личного банковского счета.
+
 ## Тестирование
 
 Для тестирования используется `pytest`.
@@ -113,6 +137,9 @@ pytest
 - `tests/test_widget.py` — функции из `widget.py`;
 - `tests/test_processing.py` — функции из `processing.py`;
 - `tests/test_decorators.py` — декоратор `log`;
+- `tests/test_generators.py` — генераторы;
+- `tests/test_utils.py` — чтение JSON и файловое логирование;
+- `tests/test_external_api.py` — конвертация валют, включая ошибки API;
 - `tests/conftest.py` — общие фикстуры с тестовыми данными.
 
 В тестах используются фикстуры и параметризация `pytest.mark.parametrize`.
@@ -126,23 +153,9 @@ pytest
 Покрытие строк и ветвлений запускается автоматически вместе с `pytest`.
 Минимально допустимое покрытие в настройках проекта — 80%.
 
-Результат контрольного запуска на Python 3.12:
-
-```text
-74 passed
-src/decorators.py: 28 statements, 0 missed, 2 branches, 0 partial
-TOTAL: 64 statements, 0 missed, 16 branches, 0 partial
-Coverage: 100%
-```
-
-В `tests/test_decorators.py` выполняются 27 проверок, остальные 47 относятся
-к существующим модулям из `develop`.
-
-Полный отчет, сформированный `coverage.py`, сохранен в папке `htmlcov/`:
-сводка, построчное покрытие модулей, страницы функций и вспомогательные файлы.
-Откройте `htmlcov/index.html` в браузере. Команда `pytest` пересоздает отчет.
-
-[Запуск GitHub Actions, сформировавший отчет](https://github.com/inftverezovsky/bank-widget/actions/runs/34971884245).
+Полный отчет `coverage.py` для исходников этой ветки сохранен в `htmlcov/`.
+Откройте `htmlcov/index.html` в браузере. Команда `pytest` пересоздает отчет;
+актуальный результат автоматической проверки также доступен в GitHub Actions.
 
 ## Проверка качества кода
 
@@ -152,14 +165,8 @@ mypy src tests
 isort --check-only --diff src tests
 ```
 
-Результаты того же контрольного запуска:
-
-- `flake8 src tests` — 0 ошибок;
-- `mypy src tests` — `Success: no issues found in 11 source files`;
-- `isort --check-only --diff src tests` — 0 файлов требуют изменений.
-
-В GitHub Actions установлены pytest 8.3.5, pytest-cov 6.0.0, Flake8 7.1.1,
-mypy 1.13.0 и isort 5.13.2. Эти версии входят в диапазоны `pyproject.toml`.
+Зависимости описаны в `pyproject.toml` и зафиксированы в `poetry.lock`.
+GitHub Actions устанавливает проект и инструменты проверки из совместимых диапазонов.
 Проверки запускаются для feature-веток и pull request в `develop`.
 Отдельно проверяется, что игнорируемые файлы не отслеживаются Git.
 
@@ -173,5 +180,5 @@ mypy 1.13.0 и isort 5.13.2. Эти версии входят в диапазо�
 в репозиторий. HTML-отчет хранится по условию задания; его служебный
 `status.json` исключен через `htmlcov/.gitignore`.
 
-Ветка этой домашней работы — `feature/homework_decorators`, целевая ветка PR —
-`develop`. Работа с генераторами остается отдельно в PR №3 и этой веткой не меняется.
+Ветка этой домашней работы — `feature/homework_json_requests`, целевая ветка PR —
+`develop`. Предыдущие pull request не изменяются; принятый код генераторов сохранен в новой ветке.
