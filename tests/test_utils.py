@@ -118,3 +118,17 @@ def test_load_transactions_accepts_empty_list() -> None:
     """Пустой список является корректным содержимым JSON."""
     with patch("src.utils.Path.open", mock_open(read_data="[]")):
         assert load_transactions("empty.json") == []
+
+
+@patch("src.utils.Path.open", new_callable=mock_open, read_data='[{"id": 1, "description": "Перевод"}]')
+def test_load_transactions_with_patch_decorator(mock_file: Mock) -> None:
+    """Декоратор подменяет файл, а функция разбирает настоящий JSON."""
+    assert load_transactions("operations.json") == [{"id": 1, "description": "Перевод"}]
+    mock_file.assert_called_once_with(encoding="utf-8")
+
+
+@patch("src.utils.Path.open", side_effect=FileNotFoundError("missing.json"))
+def test_missing_file_with_patch_decorator(mock_file: Mock) -> None:
+    """Декоратор воспроизводит отсутствие файла без обращения к диску."""
+    assert load_transactions("missing.json") == []
+    mock_file.assert_called_once_with(encoding="utf-8")

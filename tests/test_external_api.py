@@ -184,3 +184,42 @@ def test_real_dotenv_loading_keeps_environment_priority(
             assert get_transaction_amount(transaction) == 0.0
     expected_key = environment_key or "test-only-file-key"
     assert offline_http.call_args.kwargs["headers"] == {"apikey": expected_key}
+
+
+@patch("src.external_api.dotenv.load_dotenv")
+@patch("src.external_api.requests.get")
+@patch.dict(os.environ, {"EXCHANGE_RATE_API_KEY": "test-only-decorator-key"})
+def test_conversion_with_patch_decorators(mock_get: Mock, mock_load_env: Mock) -> None:
+    """Несколько декораторов изолируют HTTP и загрузку окружения."""
+    transaction = {"operationAmount": {"amount": "12.50", "currency": {"code": "USD"}}}
+    response = Mock(spec=requests.Response)
+    response.json.return_value = {"success": True, "result": 1250.0}
+    mock_get.return_value = response
+
+    result = get_transaction_amount(transaction)
+
+    assert result == 1250.0
+    assert isinstance(result, float)
+    mock_get.assert_called_once_with(
+        "https://api.apilayer.com/exchangerates_data/convert",
+        params={"from": "USD", "to": "RUB", "amount": 12.5},
+        headers={"apikey": "test-only-decorator-key"},
+        timeout=10,
+    )
+    mock_load_env.assert_called_once_with(Path(__file__).resolve().parents[1] / ".env", override=False)
+    response.raise_for_status.assert_called_once_with()
+    response.close.assert_called_once_with()
+
+
+@patch("src.external_api.dotenv.load_dotenv")
+@patch("src.external_api.requests.get", side_effect=requests.Timeout("request timed out"))
+@patch.dict(os.environ, {"EXCHANGE_RATE_API_KEY": "test-only-decorator-key"})
+def test_timeout_with_patch_decorators(mock_get: Mock, mock_load_env: Mock) -> None:
+    """side_effect в декораторе проверяет обработку таймаута API."""
+    transaction = {"operationAmount": {"amount": "10", "currency": {"code": "EUR"}}}
+
+    with pytest.raises(RuntimeError, match="Не удалось выполнить конвертацию валюты"):
+        get_transaction_amount(transaction)
+
+    mock_get.assert_called_once()
+    mock_load_env.assert_called_once_with(Path(__file__).resolve().parents[1] / ".env", override=False)
